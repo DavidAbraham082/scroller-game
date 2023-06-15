@@ -6,6 +6,7 @@ class Program
     private static char m_obstacleChar = '\u2580';
 
     private static int m_RefreshRate = 16; // ~60fps
+    private static int currentGameTick;
     private static bool m_GameEnded;
     private static int m_height = 15;
     private static int m_width = 7;
@@ -39,7 +40,6 @@ class Program
 
     private static void Main(string[] args)
     {
-        int currentGameTick = 0;
         m_obstacleInputTape = GenerateObstacleInputTape();
 
         Thread watchKeyThread = new(WatchKeys);
@@ -59,18 +59,16 @@ class Program
 
         void PlayGame()
         {
-            while (PerformGameTick(currentGameTick))   //PerformGameTick returns false on game over
-            {
-                currentGameTick++;
-            }
+            while (PerformGameTick()) {}   //PerformGameTick returns false on game over
             m_GameEnded = true;
         }
     }
 
-    public static bool PerformGameTick(int currentGameTick)
+    public static bool PerformGameTick()
     {
         Console.WriteLine($"Key: {m_playersKeyPressedInfo.Key} | ticks: {currentGameTick} | ReadHeadValue: {m_obstacleInputTapeReadHead}");
 
+        // Move player
         if (m_playersKeyPressedInfo.Key == ConsoleKey.H && m_playerPosition != 0) {
             m_playerLine[m_playerPosition] = ' ';
             m_playerPosition--;
@@ -80,7 +78,7 @@ class Program
             m_playerLine[m_playerPosition] = ' ';
             m_playerPosition++;
         }
-        m_playersKeyPressedInfo = new();
+        m_playersKeyPressedInfo = new();    // What happens if click H twice in one tick?
 
         // Obstacle Insertion
         if (currentGameTick % 5 == 0
@@ -145,7 +143,7 @@ class Program
         Console.WriteLine("|" + string.Concat(m_playerLine)+ "|");
 
         // Game End State
-        if ((currentGameTick + 1) % 5 == 0 
+        if (++currentGameTick % 5 == 0 
                 && m_obstacles.Count > 0
                 && m_obstacles.First().yPosition == m_height - 1
                 && m_playerPosition == m_obstacles.First().xPosition) 
