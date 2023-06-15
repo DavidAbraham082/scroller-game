@@ -43,7 +43,7 @@ class Program
         m_obstacleInputTape = GenerateObstacleInputTape();
 
         Thread watchKeyThread = new(WatchKeys);
-        Thread gameThread = new(GameLoop);
+        Thread gameThread = new(PlayGame);
 
         Console.Clear();
         watchKeyThread.Start();
@@ -57,128 +57,118 @@ class Program
             }
         }
 
-        void GameLoop()
+        void PlayGame()
         {
-            while (true)
+            while (PerformGameTick(currentGameTick))   //PerformGameTick returns false on game over
             {
-                Console.WriteLine($"Key: {m_playersKeyPressedInfo.Key} | ticks: {currentGameTick} | ReadHeadValue: {m_obstacleInputTapeReadHead}");
-
-                if (m_playersKeyPressedInfo.Key == ConsoleKey.H && m_playerPosition != 0) {
-                    m_playerLine[m_playerPosition] = ' ';
-                    m_playerPosition--;
-                }
-                else if (m_playersKeyPressedInfo.Key == ConsoleKey.L && m_playerPosition != 6)
-                {
-                    m_playerLine[m_playerPosition] = ' ';
-                    m_playerPosition++;
-                }
-                m_playersKeyPressedInfo = new();
-
-                // Obstacle Insertion
-                if (currentGameTick % 5 == 0
-                        && m_obstacleInputTapeReadHead != m_obstacleInputTape.Count)
-                {
-                    for (int i = 0; i < m_obstacleInputTape[m_obstacleInputTapeReadHead].Length; i++)
-                    {
-                        if (m_obstacleInputTape[m_obstacleInputTapeReadHead][i])
-                        {
-                            m_obstacles.Add(new Obstacle(i));
-                        }
-                    }
-
-                    if (m_obstacleInputTape.Count > 0)
-                    {
-                        m_obstacleInputTapeReadHead++;
-                    }
-                }
-
-                // Obstacle management
-                if (currentGameTick % 5 == 0)
-                {
-                    for (int i = 0; i < m_obstacles.Count; i++) 
-                    {
-                        Obstacle obstacle = m_obstacles[i];
-                        if (obstacle.firstSpawn)
-                        {
-                            obstacle.firstSpawn = false;
-                            obstacle.yPosition++;
-                            m_gameWorld[obstacle.yPosition, obstacle.xPosition] = m_obstacleChar;
-                        }
-                        else if (obstacle.yPosition == m_height - 1)
-                        {
-                            m_gameWorld[obstacle.yPosition, obstacle.xPosition] = ' ';
-                            m_obstacles.Remove(obstacle);
-                        }
-                        else
-                        {
-                            obstacle.yPosition++;
-                            m_gameWorld[obstacle.yPosition, obstacle.xPosition] = m_obstacleChar;
-                            m_gameWorld[obstacle.yPosition - 1, obstacle.xPosition] = ' ';
-                        }
-                    }
-                }
-
-                // Gameworld Drawing Logic
-                StringBuilder builder = new();
-                for (int i = 0; i < m_height; i++)
-                {
-                    builder.Append('|');
-                    for (int j = 0; j < m_width; j++)
-                    {
-                        builder.Append(m_gameWorld[i,j]);
-                    }
-                    builder.Append("|\n");
-                }
-                Console.WriteLine(builder);
-                builder.Clear();
-
-                m_playerLine[m_playerPosition] = m_playerChar;
-                Console.WriteLine("|-------|");
-                Console.WriteLine("|" + string.Concat(m_playerLine)+ "|");
-
                 currentGameTick++;
-
-                // Game End State
-                if (currentGameTick % 5 == 0 
-                        && m_obstacles.Count > 0
-                        && m_obstacles.First().yPosition == m_height - 1
-                        && m_playerPosition == m_obstacles.First().xPosition) 
-                {
-                    Console.WriteLine("Collision Occurred!");
-                    break;
-                }
-
-                if (m_obstacleInputTapeReadHead == 240) // kinda bung logic but eh... 
-                {
-                    Console.WriteLine("Game Over! You Win!");
-                    break;
-                }
-                Thread.Sleep(m_RefreshRate);
-                Console.Clear();
             }
-            
             m_GameEnded = true;
         }
     }
 
-    class Obstacle
+    public static bool PerformGameTick(int currentGameTick)
     {
-        public int yPosition { get; set; }
-        public int xPosition { get; set; }
-        public bool firstSpawn { get; set; }
+        Console.WriteLine($"Key: {m_playersKeyPressedInfo.Key} | ticks: {currentGameTick} | ReadHeadValue: {m_obstacleInputTapeReadHead}");
 
-        public Obstacle(int xPosition)
-        {
-            this.xPosition = xPosition;
-            yPosition = -1;
-            firstSpawn = true;
+        if (m_playersKeyPressedInfo.Key == ConsoleKey.H && m_playerPosition != 0) {
+            m_playerLine[m_playerPosition] = ' ';
+            m_playerPosition--;
         }
+        else if (m_playersKeyPressedInfo.Key == ConsoleKey.L && m_playerPosition != 6)
+        {
+            m_playerLine[m_playerPosition] = ' ';
+            m_playerPosition++;
+        }
+        m_playersKeyPressedInfo = new();
+
+        // Obstacle Insertion
+        if (currentGameTick % 5 == 0
+                && m_obstacleInputTapeReadHead != m_obstacleInputTape.Count)
+        {
+            for (int i = 0; i < m_obstacleInputTape[m_obstacleInputTapeReadHead].Length; i++)
+            {
+                if (m_obstacleInputTape[m_obstacleInputTapeReadHead][i])
+                {
+                    m_obstacles.Add(new Obstacle(i));
+                }
+            }
+
+            if (m_obstacleInputTape.Count > 0)
+            {
+                m_obstacleInputTapeReadHead++;
+            }
+        }
+
+        // Obstacle management
+        if (currentGameTick % 5 == 0)
+        {
+            for (int i = 0; i < m_obstacles.Count; i++) 
+            {
+                Obstacle obstacle = m_obstacles[i];
+                if (obstacle.firstSpawn)
+                {
+                    obstacle.firstSpawn = false;
+                    obstacle.yPosition++;
+                    m_gameWorld[obstacle.yPosition, obstacle.xPosition] = m_obstacleChar;
+                }
+                else if (obstacle.yPosition == m_height - 1)
+                {
+                    m_gameWorld[obstacle.yPosition, obstacle.xPosition] = ' ';
+                    m_obstacles.Remove(obstacle);
+                }
+                else
+                {
+                    obstacle.yPosition++;
+                    m_gameWorld[obstacle.yPosition, obstacle.xPosition] = m_obstacleChar;
+                    m_gameWorld[obstacle.yPosition - 1, obstacle.xPosition] = ' ';
+                }
+            }
+        }
+
+        // Gameworld Drawing Logic
+        StringBuilder builder = new();
+        for (int i = 0; i < m_height; i++)
+        {
+            builder.Append('|');
+            for (int j = 0; j < m_width; j++)
+            {
+                builder.Append(m_gameWorld[i,j]);
+            }
+            builder.Append("|\n");
+        }
+        Console.WriteLine(builder);
+        builder.Clear();
+
+        m_playerLine[m_playerPosition] = m_playerChar;
+        Console.WriteLine("|-------|");
+        Console.WriteLine("|" + string.Concat(m_playerLine)+ "|");
+
+        // Game End State
+        if (++currentGameTick % 5 == 0 
+                && m_obstacles.Count > 0
+                && m_obstacles.First().yPosition == m_height - 1
+                && m_playerPosition == m_obstacles.First().xPosition) 
+        {
+            Console.WriteLine("Collision Occurred!");
+            return false;
+        }
+
+        if (m_obstacleInputTapeReadHead == 240) // kinda bung logic but eh... 
+        {
+            Console.WriteLine("Game Over! You Win!");
+            return false;
+        }
+        Thread.Sleep(m_RefreshRate);
+        Console.Clear();
+
+        return true;
     }
 
     static List<bool[]> GenerateObstacleInputTape()
     {
         Random rng = new Random();
-        List<bool[]> gameWorld = new List<bool[]>();
+        List<bool[]> obstacleInputTape = new List<bool[]>();
 
         int obstacleCooldown = 0;
 
@@ -206,9 +196,23 @@ class Program
                 obstacleCooldown--;
             }
 
-            gameWorld.Add(row);
+            obstacleInputTape.Add(row);
         }
 
-        return gameWorld;
+        return obstacleInputTape;
+    }
+
+    class Obstacle
+    {
+        public int yPosition { get; set; }
+        public int xPosition { get; set; }
+        public bool firstSpawn { get; set; }
+
+        public Obstacle(int xPosition)
+        {
+            this.xPosition = xPosition;
+            yPosition = -1;
+            firstSpawn = true;
+        }
     }
 }
