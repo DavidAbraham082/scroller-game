@@ -80,7 +80,7 @@ class Program
             m_playerLine[m_playerPosition] = ' ';
             m_playerPosition++;
         }
-        m_playersKeyPressedInfo = new();    // What happens if click H twice in one tick?
+        m_playersKeyPressedInfo = new();    // What happens if keypress twice in one tick?
 
         // Obstacle Insertion
         if (currentGameTick % 5 == 0
