@@ -33,7 +33,7 @@ class Program
     private static int m_playerPosition = 3;
     private static ConsoleKeyInfo m_playersKeyPressedInfo = new();
     private static List<bool[]> m_obstacleInputTape = new();
-    private static int m_obstacleInputTapeReadHead = 0;
+    private static int m_obstacleInputTapeReadHeadPosition = 0;
 
     private static List<Obstacle> m_obstacles = new();
     private static bool m_collision;
@@ -68,7 +68,7 @@ class Program
 
     public static void PerformGameTick()
     {
-        Console.WriteLine($"Key: {m_playersKeyPressedInfo.Key} | ticks: {currentGameTick} | ReadHeadValue: {m_obstacleInputTapeReadHead}");
+        Console.WriteLine($"Key: {m_playersKeyPressedInfo.Key} | ticks: {currentGameTick} | ReadHeadValue: {m_obstacleInputTapeReadHeadPosition}");
 
         // Move player
         if (m_playersKeyPressedInfo.Key == ConsoleKey.H && m_playerPosition != 0) {
@@ -84,11 +84,11 @@ class Program
 
         // Obstacle Insertion
         if (currentGameTick % 5 == 0
-                && m_obstacleInputTapeReadHead != m_obstacleInputTape.Count)
+                && m_obstacleInputTapeReadHeadPosition != m_obstacleInputTape.Count)
         {
-            for (int i = 0; i < m_obstacleInputTape[m_obstacleInputTapeReadHead].Length; i++)
+            for (int i = 0; i < m_obstacleInputTape[m_obstacleInputTapeReadHeadPosition].Length; i++)
             {
-                if (m_obstacleInputTape[m_obstacleInputTapeReadHead][i])
+                if (m_obstacleInputTape[m_obstacleInputTapeReadHeadPosition][i])
                 {
                     m_obstacles.Add(new Obstacle(i));
                 }
@@ -96,7 +96,7 @@ class Program
 
             if (m_obstacleInputTape.Count > 0)
             {
-                m_obstacleInputTapeReadHead++;
+                m_obstacleInputTapeReadHeadPosition++;
             }
         }
 
@@ -155,7 +155,7 @@ class Program
             return;
         }
 
-        if (m_obstacleInputTapeReadHead == 240) // kinda bung logic but eh... 
+        if (m_obstacleInputTapeReadHeadPosition == 240) // kinda bung logic but eh... 
         {
             Console.WriteLine("Game Over! You Win!");
             m_GameEnded = true;
