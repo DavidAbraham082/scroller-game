@@ -145,7 +145,7 @@ class Program
         Console.WriteLine("|" + string.Concat(m_playerLine)+ "|");
 
         // Game End State
-        if (++currentGameTick % 5 == 0 
+        if ((currentGameTick + 1) % 5 == 0 
                 && m_obstacles.Count > 0
                 && m_obstacles.First().yPosition == m_height - 1
                 && m_playerPosition == m_obstacles.First().xPosition) 
