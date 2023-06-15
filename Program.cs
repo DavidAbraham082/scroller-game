@@ -59,12 +59,14 @@ class Program
 
         void PlayGame()
         {
-            while (PerformGameTick()) {}   //PerformGameTick returns false on game over
-            m_GameEnded = true;
+            while (!m_GameEnded)
+            {
+                PerformGameTick();
+            }
         }
     }
 
-    public static bool PerformGameTick()
+    public static void PerformGameTick()
     {
         Console.WriteLine($"Key: {m_playersKeyPressedInfo.Key} | ticks: {currentGameTick} | ReadHeadValue: {m_obstacleInputTapeReadHead}");
 
@@ -149,18 +151,18 @@ class Program
                 && m_playerPosition == m_obstacles.First().xPosition) 
         {
             Console.WriteLine("Collision Occurred!");
-            return false;
+            m_GameEnded = true;
+            return;
         }
 
         if (m_obstacleInputTapeReadHead == 240) // kinda bung logic but eh... 
         {
             Console.WriteLine("Game Over! You Win!");
-            return false;
+            m_GameEnded = true;
+            return;
         }
         Thread.Sleep(m_RefreshRate);
         Console.Clear();
-
-        return true;
     }
 
     static List<bool[]> GenerateObstacleInputTape()
