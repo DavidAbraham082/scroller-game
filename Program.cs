@@ -40,7 +40,7 @@ class Program
     private static void Main(string[] args)
     {
         int currentGameTick = 0;
-        m_obstacleInputTape = GenerateGameWorld();
+        m_obstacleInputTape = GenerateObstacleInputTape();
 
         Thread watchKeyThread = new(WatchKeys);
         Thread gameThread = new(GameLoop);
@@ -75,7 +75,7 @@ class Program
                 m_playersKeyPressedInfo = new();
 
                 // Obstacle Insertion
-                if (ShouldUpdateGameWorld(currentGameTick) 
+                if (currentGameTick % 5 == 0
                         && m_obstacleInputTapeReadHead != m_obstacleInputTape.Count)
                 {
                     for (int i = 0; i < m_obstacleInputTape[m_obstacleInputTapeReadHead].Length; i++)
@@ -148,9 +148,10 @@ class Program
                     break;
                 }
 
-                    if (m_obstacleInputTapeReadHead == 240) // kinda bung logic but eh... 
+                if (m_obstacleInputTapeReadHead == 240) // kinda bung logic but eh... 
                 {
                     Console.WriteLine("Game Over! You Win!");
+                    break;
                 }
                 Thread.Sleep(m_RefreshRate);
                 Console.Clear();
@@ -158,12 +159,6 @@ class Program
             
             m_GameEnded = true;
         }
-
-        bool ShouldUpdateGameWorld(int currentTick)
-        {
-            return currentTick % 5 == 0;
-        }
-
     }
 
     class Obstacle
@@ -180,7 +175,7 @@ class Program
         }
     }
 
-    static List<bool[]> GenerateGameWorld()
+    static List<bool[]> GenerateObstacleInputTape()
     {
         Random rng = new Random();
         List<bool[]> gameWorld = new List<bool[]>();
